@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:villagemart;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;LOCK_TIMEOUT=20000;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+villagemart:
+  security:
+    # Test-only signing key; production keys come from the JWT_SECRET environment variable.
+    jwt-secret: dGVzdC1vbmx5LWp3dC1zaWduaW5nLWtleS1mb3ItdmlsbGFnZW1hcnQtdGVzdHM=
+    access-token-ttl-minutes: 15
+    refresh-token-ttl-days: 7
+  owner:
+    username: owner
+    mobile: "9876543210"
+    name: Test Owner
+    password: Owner@Test123
+  firebase:
+    credentials-base64: ""
+    push-retry-interval-ms: 3600000
+    max-push-attempts: 3
+
+logging:
+  level:
+    com.villagemart: WARN

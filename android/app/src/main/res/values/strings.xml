@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VillageMart</string>
+    <string name="stock_alert_channel">Stock alerts</string>
+    <string name="stock_alert_channel_description">Low and out-of-stock product alerts</string>
+</resources>

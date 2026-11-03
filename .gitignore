@@ -1,0 +1,32 @@
+# Build outputs
+build/
+target/
+out/
+.gradle/
+.kotlin/
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local / secrets
+.env
+*.env.local
+local.properties
+keystore.properties
+*.jks
+*.keystore
+google-services.json
+firebase-service-account*.json
+android/app/release/
+
+# Android
+.externalNativeBuild
+.cxx
+captures/
+
+*.hprof

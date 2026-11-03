@@ -1,0 +1,5 @@
+package com.villagemart.inventory;
+
+public enum MovementType {
+    OPENING_STOCK, PURCHASE, SALE, SALE_RETURN, PURCHASE_RETURN, DAMAGE, MANUAL_ADJUSTMENT, CANCELLATION_REVERSAL
+}

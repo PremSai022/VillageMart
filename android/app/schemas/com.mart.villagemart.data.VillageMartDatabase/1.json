@@ -1,0 +1,64 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "09b9d63a891025303f8b5ba4c47f7e3b",
+    "entities": [
+      {
+        "tableName": "pending_sales",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`idempotencyKey` TEXT NOT NULL, `requestJson` TEXT NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, `status` TEXT NOT NULL, `saleId` INTEGER, `invoiceNumber` TEXT, `lastError` TEXT, PRIMARY KEY(`idempotencyKey`))",
+        "fields": [
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotencyKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestJson",
+            "columnName": "requestJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saleId",
+            "columnName": "saleId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "invoiceNumber",
+            "columnName": "invoiceNumber",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastError",
+            "columnName": "lastError",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "idempotencyKey"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '09b9d63a891025303f8b5ba4c47f7e3b')"
+    ]
+  }
+}
