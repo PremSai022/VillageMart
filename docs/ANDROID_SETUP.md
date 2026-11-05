@@ -10,8 +10,8 @@
 
 1. Open the repository's `android/` directory in Android Studio or use its Gradle wrapper.
 2. Set `android/local.properties` to your SDK path (Android Studio manages this local-only file).
-3. Configure the debug API URL through `VILLAGEMART_API_BASE_URL_DEBUG` or a local Gradle property. The emulator
-   default is `http://10.0.2.2:8080/`; a physical device needs the reachable host address. The client appends
+3. The debug API URL defaults to `https://villagemart-production.up.railway.app/`. To use a local backend, set
+   `VILLAGEMART_API_BASE_URL_DEBUG` or a local Gradle property (emulator: `http://10.0.2.2:8080/`). The client appends
    `/api/v1/` automatically, so use the API origin (or a base URL already ending in `/api/v1`).
 4. Start the backend and MySQL using the instructions in `DEPLOYMENT.md`.
 5. Build and run:
@@ -36,7 +36,8 @@ secret on the backend. Without Firebase, dashboard and persisted backend alerts 
 
 ## Release builds
 
-Set `VILLAGEMART_API_BASE_URL` to the production HTTPS API URL before `:app:assembleRelease`. Release signing can be
+Release builds use `https://villagemart-production.up.railway.app/` by default; override with
+`VILLAGEMART_API_BASE_URL` if needed. Release signing can be
 configured in ignored `android/keystore.properties` or through `VILLAGEMART_KEYSTORE_FILE`,
 `VILLAGEMART_KEYSTORE_PASSWORD`, `VILLAGEMART_KEY_ALIAS`, and `VILLAGEMART_KEY_PASSWORD` CI variables. Never check in
 signing files or passwords.

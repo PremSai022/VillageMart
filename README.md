@@ -30,8 +30,9 @@ docker-compose.yml
    docker compose up --build
    ```
 
-3. Open `android/` in Android Studio, use the emulator's default API URL (`http://10.0.2.2:8080/`), and run the
-   `app` configuration. Configure `VILLAGEMART_API_BASE_URL_DEBUG` for a physical device.
+3. Open `android/` in Android Studio and run the `app` configuration. It uses the production API
+   `https://villagemart-production.up.railway.app/` by default; set `VILLAGEMART_API_BASE_URL_DEBUG` (e.g.
+   `http://10.0.2.2:8080/`) to use a local backend.
 4. Sign in with the initial owner account configured in `.env`.
 
 Backend manual build/test:

@@ -23,8 +23,9 @@ val localProps = Properties().apply {
 fun config(name: String, envName: String, default: String): String =
     (localProps.getProperty(name) ?: System.getenv(envName) ?: providers.gradleProperty(name).orNull ?: default)
 
-val debugApiUrl = config("villagemart.apiBaseUrl.debug", "VILLAGEMART_API_BASE_URL_DEBUG", "http://10.0.2.2:8080/")
-val releaseApiUrl = config("villagemart.apiBaseUrl.release", "VILLAGEMART_API_BASE_URL", "")
+val productionApiUrl = "https://villagemart-production.up.railway.app/"
+val debugApiUrl = config("villagemart.apiBaseUrl.debug", "VILLAGEMART_API_BASE_URL_DEBUG", productionApiUrl)
+val releaseApiUrl = config("villagemart.apiBaseUrl.release", "VILLAGEMART_API_BASE_URL", productionApiUrl)
 val appVersionCode = config("villagemart.versionCode", "VILLAGEMART_VERSION_CODE", "1").toInt()
 val appVersionName = config("villagemart.versionName", "VILLAGEMART_VERSION_NAME", "1.0.0")
 
