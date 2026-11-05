@@ -10,9 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 /**
- * Creates the single owner account from environment variables on first start-up.
- * There is intentionally no public registration endpoint.
+ * Creates the single owner account from environment variables on first start-up (optional: when they are not set,
+ * the owner can register once through {@code POST /api/v1/auth/register}). Also performs operator-driven password
+ * recovery when {@code OWNER_RESET_PASSWORD} is set.
  */
 @Slf4j
 @Component
@@ -21,18 +24,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class OwnerBootstrap implements ApplicationRunner {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties properties;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        AppProperties.Owner owner = properties.owner();
         if (userRepository.count() > 0) {
+            resetPasswordIfRequested(owner);
             return;
         }
-        AppProperties.Owner owner = properties.owner();
         if (owner == null || isBlank(owner.username()) || isBlank(owner.password())) {
-            log.warn("No users exist and OWNER_USERNAME/OWNER_PASSWORD are not set - nobody can log in until configured");
+            log.info("No owner account exists yet - owner registration is open via the app");
             return;
         }
         if (owner.password().length() < 8) {
@@ -47,6 +52,26 @@ public class OwnerBootstrap implements ApplicationRunner {
         user.setActive(true);
         userRepository.save(user);
         log.info("Initial owner account '{}' created", user.getUsername());
+    }
+
+    private void resetPasswordIfRequested(AppProperties.Owner owner) {
+        if (owner == null || isBlank(owner.resetPassword())) {
+            return;
+        }
+        if (!owner.resetPassword().matches(AuthDtos.PASSWORD_PATTERN)) {
+            throw new IllegalStateException(
+                    "OWNER_RESET_PASSWORD must be 8-100 characters and include a letter and a number");
+        }
+        User user = userRepository.findFirstByRoleOrderByIdAsc(Role.OWNER).orElse(null);
+        if (user == null || passwordEncoder.matches(owner.resetPassword(), user.getPasswordHash())) {
+            log.warn("OWNER_RESET_PASSWORD is still set - remove it from the environment now that recovery is complete");
+            return;
+        }
+        user.setPasswordHash(passwordEncoder.encode(owner.resetPassword()));
+        user.setActive(true);
+        refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
+        log.warn("Owner password was reset via OWNER_RESET_PASSWORD and all sessions were revoked. "
+                + "Remove OWNER_RESET_PASSWORD from the environment.");
     }
 
     private static boolean isBlank(String s) {

@@ -1,13 +1,17 @@
 package com.villagemart.auth;
 
 import com.villagemart.auth.AuthDtos.AuthResponse;
+import com.villagemart.auth.AuthDtos.RegisterRequest;
 import com.villagemart.auth.AuthDtos.UserDto;
 import com.villagemart.common.ApiException;
 import com.villagemart.common.IdempotencyService;
 import com.villagemart.config.AppProperties;
 import com.villagemart.security.JwtService;
+import com.villagemart.settings.BusinessSettings;
+import com.villagemart.settings.BusinessSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Locale;
 
 @Slf4j
 @Service
@@ -33,6 +38,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties properties;
+    private final BusinessSettingsRepository businessSettingsRepository;
 
     @Transactional
     public AuthResponse login(String login, String password) {
@@ -42,6 +48,59 @@ public class AuthService {
         user.setLastLoginAt(Instant.now());
         log.info("User {} logged in", user.getUsername());
         return issueTokens(user);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean registrationOpen() {
+        return userRepository.count() == 0;
+    }
+
+    /**
+     * One-time owner registration. Only allowed while no user exists; the business settings row is locked so
+     * concurrent attempts are serialised and at most one owner can ever be created this way.
+     */
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        businessSettingsRepository.lockAll();
+        if (userRepository.count() > 0) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "REGISTRATION_CLOSED",
+                    "An owner account already exists for this business. Please sign in.");
+        }
+        String mobile = request.mobileNumber().trim();
+        String email = blankToNull(request.email());
+        if (userRepository.existsByMobile(mobile) || userRepository.existsByUsernameIgnoreCase(mobile)) {
+            throw ApiException.conflict("MOBILE_ALREADY_REGISTERED", "This mobile number is already registered");
+        }
+        if (email != null && userRepository.existsByEmailIgnoreCase(email)) {
+            throw ApiException.conflict("EMAIL_ALREADY_REGISTERED", "This email address is already registered");
+        }
+
+        User user = new User();
+        user.setUsername(mobile);
+        user.setMobile(mobile);
+        user.setEmail(email == null ? null : email.toLowerCase(Locale.ROOT));
+        user.setFullName(request.fullName().trim());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setRole(Role.OWNER);
+        user.setActive(true);
+        user.setLastLoginAt(Instant.now());
+        userRepository.save(user);
+
+        BusinessSettings settings = businessSettingsRepository.findFirstByOrderByIdAsc().orElseGet(BusinessSettings::new);
+        settings.setBusinessName(request.businessName().trim());
+        settings.setAddress(blankToNull(request.businessAddress()));
+        settings.setMobile(mobile);
+        if (email != null) {
+            settings.setEmail(email.toLowerCase(Locale.ROOT));
+        }
+        businessSettingsRepository.save(settings);
+
+        log.info("Owner account registered (user id {})", user.getId());
+        return issueTokens(user);
+    }
+
+    private static String blankToNull(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
     }
 
     @Transactional
@@ -112,6 +171,7 @@ public class AuthService {
     }
 
     static UserDto toDto(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getMobile(), user.getFullName(), user.getRole().name());
+        return new UserDto(user.getId(), user.getUsername(), user.getMobile(), user.getEmail(), user.getFullName(),
+                user.getRole().name());
     }
 }

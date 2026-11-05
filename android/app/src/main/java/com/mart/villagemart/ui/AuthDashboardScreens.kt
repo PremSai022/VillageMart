@@ -39,6 +39,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -50,91 +52,29 @@ import java.util.Locale
 @Composable
 fun SplashScreen() {
     Box(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary),
+        Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(BrandEmeraldLight, BrandEmerald))),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                Modifier.size(104.dp).background(MaterialTheme.colorScheme.onPrimary, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Filled.Storefront,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(56.dp)
-                )
-            }
+            BrandMark(112.dp)
             Spacer(Modifier.height(24.dp))
             Text(
                 "VillageMart",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = Color.White
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 "Mobile village retail, simplified",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                color = Color.White.copy(alpha = 0.85f)
             )
             Spacer(Modifier.height(36.dp))
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 strokeWidth = 3.dp,
                 modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun LoginScreen(
-    busy: Boolean,
-    error: String?,
-    onLogin: (String, String) -> Unit,
-    onClearError: () -> Unit
-) {
-    var login by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(Icons.Filled.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 16.dp))
-            Text("VillageMart", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Text("Your business, in your hands.", style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(32.dp))
-            FormField(login, { login = it; onClearError() }, "Username or mobile number")
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it; onClearError() },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
-            )
-            ErrorMessage(error)
-            Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = { onLogin(login, password) },
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                if (busy) CircularProgressIndicator(modifier = Modifier.height(22.dp), strokeWidth = 2.dp)
-                else Text("Sign in")
-            }
-            Spacer(Modifier.height(20.dp))
-            Text(
-                "Sign in with the owner account configured for your VillageMart server.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

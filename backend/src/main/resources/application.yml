@@ -2,9 +2,9 @@ spring:
   application:
     name: villagemart-backend
   datasource:
-    url: mysql://root:FoolOLsExeUYgKLbprHowltgnZldxUBv@mysql.railway.internal:3306/railway
-    username: ${MYSQLUSER:root}
-    password: ${MYSQL_ROOT_PASSWORD:}
+    url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:villagemart}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:${MYSQLUSER:villagemart}}
+    password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
@@ -74,6 +74,8 @@ villagemart:
     mobile: ${OWNER_MOBILE:}
     name: ${OWNER_NAME:Owner}
     password: ${OWNER_PASSWORD:}
+    # Account recovery: set temporarily to reset the existing owner's password on start-up, then remove it.
+    reset-password: ${OWNER_RESET_PASSWORD:}
   business:
     name: ${BUSINESS_NAME:VillageMart}
     address: ${BUSINESS_ADDRESS:}

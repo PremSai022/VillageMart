@@ -41,9 +41,18 @@ class AuthIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    void noPublicRegistrationEndpoint() throws Exception {
-        Response r = call(HttpMethod.POST, "/api/v1/auth/register", Map.of("login", "x", "password", "y"), null, null);
-        assertThat(r.status()).isIn(401, 403, 404);
+    void registrationIsClosedOnceAnOwnerExists() throws Exception {
+        Response status = call(HttpMethod.GET, "/api/v1/auth/registration-status", null, null, null).expect(200);
+        assertThat(status.body().path("registrationOpen").asBoolean()).isFalse();
+
+        Map<String, Object> request = Map.of(
+                "fullName", "Intruder", "mobileNumber", "9123456780", "password", "Intruder123",
+                "businessName", "Other shop", "acceptTerms", true);
+        Response r = call(HttpMethod.POST, "/api/v1/auth/register", request, null, null).expect(403);
+        assertThat(r.code()).isEqualTo("REGISTRATION_CLOSED");
+        Response attempt = call(HttpMethod.POST, "/api/v1/auth/login",
+                Map.of("login", "9123456780", "password", "Intruder123"), null, null);
+        assertThat(attempt.status()).isEqualTo(401);
     }
 
     @Test

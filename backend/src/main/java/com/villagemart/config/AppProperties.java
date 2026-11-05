@@ -18,7 +18,7 @@ public record AppProperties(
     public record Cors(String allowedOrigins) {
     }
 
-    public record Owner(String username, String mobile, String name, String password) {
+    public record Owner(String username, String mobile, String name, String password, String resetPassword) {
     }
 
     public record Business(String name, String address, String mobile) {

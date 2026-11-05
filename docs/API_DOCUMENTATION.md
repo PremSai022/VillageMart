@@ -9,6 +9,8 @@ unless the endpoint returns a small reference list. Dates use ISO-8601 (`YYYY-MM
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/auth/login` | Owner login (`login`, `password`) |
+| GET | `/auth/registration-status` | Public; `{"registrationOpen": true}` only while no owner exists |
+| POST | `/auth/register` | Public, single-owner: creates the first OWNER (`fullName`, `mobileNumber`, optional `email`, `password`, `businessName`, optional `businessAddress`, `acceptTerms`) and returns tokens (201). 403 `REGISTRATION_CLOSED` once an owner exists; 409 `MOBILE_ALREADY_REGISTERED`/`EMAIL_ALREADY_REGISTERED`; 400 `VALIDATION_FAILED` |
 | POST | `/auth/refresh` | Rotate refresh token (`refreshToken`) |
 | POST | `/auth/logout` | Revoke refresh token |
 | GET | `/auth/me` | Current owner |

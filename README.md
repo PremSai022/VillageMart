@@ -61,5 +61,6 @@ See [deployment](docs/DEPLOYMENT.md), [Android setup](docs/ANDROID_SETUP.md), [A
 ## Security
 
 Never commit `.env`, production credentials, Firebase service-account files, `google-services.json`, signing keys or
-signing passwords. Production release builds require an HTTPS API base URL. Configure owner bootstrap credentials
-securely before deploying; public registration is not available.
+signing passwords. Production release builds require an HTTPS API base URL. The first owner registers from the app's
+Create Account screen (POST /api/v1/auth/register); once an owner exists the backend rejects further registrations
+with 403 REGISTRATION_CLOSED.

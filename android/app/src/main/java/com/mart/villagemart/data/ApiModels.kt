@@ -7,6 +7,20 @@ import kotlinx.serialization.Serializable
 data class LoginRequest(val login: String, val password: String)
 
 @Serializable
+data class RegisterRequest(
+    val fullName: String,
+    val mobileNumber: String,
+    val email: String? = null,
+    val password: String,
+    val businessName: String,
+    val businessAddress: String? = null,
+    val acceptTerms: Boolean
+)
+
+@Serializable
+data class RegistrationStatusDto(val registrationOpen: Boolean)
+
+@Serializable
 data class RefreshRequest(val refreshToken: String)
 
 @Serializable
@@ -17,6 +31,7 @@ data class UserDto(
     val id: Long,
     val username: String,
     val mobile: String? = null,
+    val email: String? = null,
     val fullName: String,
     val role: String
 )

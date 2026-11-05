@@ -21,10 +21,16 @@ are placeholders, not credentials to use in production. Keep `.env` out of sourc
 2. Set the backend service root directory to `backend` (or use the repository root with Dockerfile path
    `backend/Dockerfile`); `backend/railway.json` configures the Dockerfile and `/actuator/health` check.
 3. Configure secrets/environment variables in Railway:
-   - `DB_URL`: JDBC MySQL URL using Railway's **private** MySQL host and database name.
-   - `DB_USERNAME`, `DB_PASSWORD`: Railway MySQL credentials.
+   - Database: reference the Railway MySQL variables `MYSQLHOST`, `MYSQLPORT`, `MYSQLDATABASE`, `MYSQLUSER`,
+     `MYSQLPASSWORD` (e.g. `MYSQLHOST=${{MySQL.MYSQLHOST}}`); the JDBC URL is built from them automatically.
+     Alternatively set `DB_URL` (must start with `jdbc:mysql://`, never Railway's `mysql://` `MYSQL_URL`),
+     `DB_USERNAME` and `DB_PASSWORD`. Never commit database credentials to `application.yml`.
    - `JWT_SECRET`: unique cryptographically random secret with at least 32 bytes.
-   - `OWNER_USERNAME`, `OWNER_PASSWORD`, and optionally `OWNER_MOBILE`, `OWNER_NAME`.
+   - Optional `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_MOBILE`, `OWNER_NAME` to pre-create the owner. If omitted,
+     the owner creates the account from the app's **Create Account** screen; registration closes permanently
+     (server-enforced) once one owner exists.
+   - Password recovery: temporarily set `OWNER_RESET_PASSWORD` (8+ chars, a letter and a digit), redeploy, sign in,
+     then remove the variable. All existing sessions are revoked when the reset is applied.
    - `BUSINESS_NAME`, `BUSINESS_ADDRESS`, `BUSINESS_MOBILE` as desired.
    - `CORS_ALLOWED_ORIGINS` only for trusted origins; the Android app does not require browser CORS.
    - Optional FCM `FIREBASE_CREDENTIALS_BASE64`; do not commit Firebase service-account JSON.

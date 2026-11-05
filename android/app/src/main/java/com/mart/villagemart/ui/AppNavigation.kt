@@ -82,7 +82,7 @@ object Routes {
 private const val SPLASH_MIN_MILLIS = 1200L
 
 @Composable
-fun VillageMartRoot(viewModel: AppViewModel = hiltViewModel()) {
+fun VillageMartRoot(viewModel: AuthViewModel = hiltViewModel()) {
     val session by viewModel.state.collectAsStateWithLifecycle()
     var splashShown by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -93,17 +93,50 @@ fun VillageMartRoot(viewModel: AppViewModel = hiltViewModel()) {
     }
     when {
         session.checking || !splashShown -> SplashScreen()
-        !session.signedIn -> LoginScreen(
-            busy = session.busy,
-            error = session.error,
-            onLogin = viewModel::signIn,
-            onClearError = viewModel::clearError
-        )
+        !session.signedIn -> AuthNavigation(session, viewModel)
         else -> MainNavigation(
             ownerName = session.ownerName,
             signingOut = session.busy,
             onLogout = viewModel::signOut
         )
+    }
+}
+
+private object AuthRoutes {
+    const val LOGIN = "auth/login"
+    const val REGISTER = "auth/register"
+}
+
+@Composable
+private fun AuthNavigation(session: SessionState, viewModel: AuthViewModel) {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = AuthRoutes.LOGIN) {
+        composable(AuthRoutes.LOGIN) {
+            LoginScreen(
+                busy = session.busy,
+                error = session.error,
+                onLogin = viewModel::signIn,
+                onClearError = viewModel::clearError,
+                onCreateAccount = {
+                    viewModel.resetMessages()
+                    navController.navigate(AuthRoutes.REGISTER) { launchSingleTop = true }
+                }
+            )
+        }
+        composable(AuthRoutes.REGISTER) {
+            RegisterScreen(
+                state = session,
+                onLoadStatus = viewModel::loadRegistrationStatus,
+                onRegister = viewModel::register,
+                onClearFieldError = viewModel::clearFieldError,
+                onBackToLogin = {
+                    viewModel.resetMessages()
+                    if (!navController.popBackStack(AuthRoutes.LOGIN, inclusive = false)) {
+                        navController.navigate(AuthRoutes.LOGIN)
+                    }
+                }
+            )
+        }
     }
 }
 

@@ -6,8 +6,6 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.mart.villagemart.worker.PendingSaleWorker
-import com.mart.villagemart.notification.DeviceTokenStore
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.encodeToString
@@ -26,38 +24,11 @@ sealed interface SaleSubmission {
 @Singleton
 class VillageMartRepository @Inject constructor(
     private val api: VillageMartApi,
-    private val tokenStore: TokenStore,
     private val pendingSaleDao: PendingSaleDao,
     private val workManager: WorkManager,
-    private val json: Json,
-    private val deviceTokenStore: DeviceTokenStore
+    private val json: Json
 ) {
     val pendingSales: Flow<List<PendingSale>> = pendingSaleDao.observeAll()
-
-    suspend fun login(login: String, password: String): AuthResponse {
-        val response = api.login(LoginRequest(login.trim(), password))
-        tokenStore.save(response.accessToken, response.refreshToken)
-        val pushToken = if (com.mart.villagemart.BuildConfig.FIREBASE_CONFIGURED) deviceTokenStore.get() else null
-        if (pushToken != null) {
-            try {
-                api.registerDevice(DeviceRegistrationRequest(pushToken))
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                Log.w(TAG, "Device token registration failed; dashboard notifications remain available", error)
-            }
-        }
-        return response
-    }
-
-    suspend fun logout() {
-        val refresh = tokenStore.refreshToken()
-        try {
-            if (refresh != null) api.logout(LogoutRequest(refresh))
-        } finally {
-            tokenStore.clear()
-        }
-    }
 
     suspend fun dashboard(period: String? = null): DashboardSummaryDto = api.dashboard(period)
 
@@ -134,8 +105,6 @@ class VillageMartRepository @Inject constructor(
 
     suspend fun notifications(): List<NotificationDto> = api.notifications().content
 
-    suspend fun me(): UserDto = api.me()
-
     suspend fun markNotificationRead(id: Long): NotificationDto = api.markNotificationRead(id)
 
     suspend fun unreadCount(): Long = api.unreadCount().count
@@ -192,6 +161,5 @@ class VillageMartRepository @Inject constructor(
 
     private companion object {
         const val PENDING_SALE_WORK = "pending-sales-sync"
-        const val TAG = "VillageMartRepository"
     }
 }
